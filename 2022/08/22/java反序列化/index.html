@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>java反序列化 | 悦昕_o&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  
+  
+    <link rel="alternate" href="/atom.xml" title="悦昕_o's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+    
+<link rel="stylesheet" href="/localshare/css/share.css">
+
+  
+  
+  
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">悦昕_o&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">不来不去 如来 o(*￣▽￣*)ブ</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        
+          <a class="main-nav-link" href="/."><i class="fa fa-home"></i> 首页</a>
+        
+          <a class="main-nav-link" href="/archives/"><i class="fa fa-archive"></i> 归档</a>
+        
+          <a class="main-nav-link" href="/about/"><i class="fa fa-user"></i> 关于</a>
+        
+          <a class="main-nav-link" href="/atom.xml"><i class="fa fa-rss"></i> 订阅</a>
+        
+      </nav>
+    </div>
+    <div id="search-form">
+      <div id="result-mask" class="hide"></div>
+      <label><input id="search-key" type="text" autocomplete="off" placeholder="搜索"></label>
+      <div id="result-wrap" class="hide">
+        <div id="search-result"></div>
+      </div>
+      <div class="hide">
+        <template id="search-tpl">
+          <div class="item">
+            <a href="/{path}" title="{title}">
+              <div class="title">{title}</div>
+              <div class="time">{date}</div>
+              <div class="tags">{tags}</div>
+            </a>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-java反序列化" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      java反序列化
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2022-08-22T09:14:50.000Z" itemprop="datePublished">2022年08月22日</time>
+</span>
+      
+      
+        <span class="article-views">
+  <i class="fa fa-views"></i>
+  <i id="busuanzi_container_page_pv">
+      <i id="busuanzi_value_page_pv"></i>
+  </i>
+</span>
+
+      
+      
+<a href="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/#comments" class="article-comment-link">
+  
+    
+    
+    
+    
+    
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>写文章为记录学习过程，方便后面自己回顾学习（希望到时能还能看懂自己的笔记(～￣▽￣)～）</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>序列化：为了数据的传输，将数据从对象或其他数据结构转为字节流的一个过程；</p>
+<p>反序列化：把数据从字节流还原成其原有数据结构的一个过程；</p>
+<p>我所理解的网络数据传输是这样的：规定一种数据交换的规则，按其规则将对象转为相应格式后进行传输；当然转换后的数据一般是字节流的形式，因为系统底层其只认识字节流。</p>
+<p>就好比 zip、jpg、bmp，系统打开相应格式的文件时为何可以正确打开？因为在系统面前它面对的永远是这些文件的字节流，不同的文件某段字节流都有着不同的含义，每种格式都有其相应的读&#x2F;写规范。</p>
+<p>同理，数据的传输也是如此，不同的数据交换协议对应不同的读&#x2F;写格式，于是序列化数据也衍生出了多种方式：</p>
+<ul>
+<li>xml</li>
+<li>yaml</li>
+<li>json<ul>
+<li>Jackson</li>
+<li>FastJson</li>
+</ul>
+</li>
+<li>各语言自带的序列化&#x2F;反序列化<ul>
+<li>Java 提供的序列化接口-Serializable </li>
+<li>…</li>
+</ul>
+</li>
+<li>Protobuf（没用过，暂不太了解）</li>
+<li>…</li>
+</ul>
+<p>本文的重点在 Java 自带的序列化&#x2F;反序列化，所以对于其他方式暂时不会太多提及。</p>
+<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><p>常见的使用场景：</p>
+<ul>
+<li>远程&#x2F;进程间数据传输（有线协议、web services、不同系统&#x2F;进程之间通信;如 rmi ）</li>
+<li>缓存&#x2F;持久化（数据库、缓存服务器、文件系统、程序未来数据通信）</li>
+<li>Tokens（API 认证 tokens 等，如 shiro 的 Remenberme）</li>
+</ul>
+<h2 id="一个简单的示例"><a href="#一个简单的示例" class="headerlink" title="一个简单的示例"></a>一个简单的示例</h2><p>序列化由 ObjectOutputStream.writeObject(object) 进行，反序列化由 ObjectInputStream.readObject() 进行。</p>
+<h3 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h3><p>1、待序列化的类<code>Opration</code>。需要实现 <code>Serializable</code>或 <code>Externalizable</code>接口，否则无法进行序列化或反序列化：</p>
+<blockquote>
+<p><code>Serializable</code>接口无具体方法，仅为标记作用，用来标识当前类可以被  ObjectOutputStream 序列化，以及被 ObjectInputStream 反序列化；</p>
+<p><code>Externalizable</code>接口与 Serializable 不同的是，默认情况下，它不会序列化任何成员变量，所有的序列化，反序列化工作都需要手动完成。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> serialize;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.Serializable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Opration</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> a;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> b;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Opration</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.a = a;</span><br><span class="line">        <span class="built_in">this</span>.b = b;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">add</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> <span class="built_in">this</span>.a + <span class="built_in">this</span>.b;</span><br><span class="line">        System.out.print(<span class="built_in">this</span>.a + <span class="string">&quot;+&quot;</span> + <span class="built_in">this</span>.b + <span class="string">&quot;= &quot;</span> + sum);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>2、进行序列化反序列化的类<code>Sample</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> serialize;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Sample</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 序列化的具体操作</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> op 需序列化的对象</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> path 接收序列化数据的文件位置</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">writeObjectTest</span><span class="params">(Object op, String path)</span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">ByteArrayOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>(); <span class="comment">//字节流对象</span></span><br><span class="line">            <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(path); <span class="comment">//文件流对象</span></span><br><span class="line">            <span class="comment">//ObjectOutputStream的形参：序列化后的数据流形式，继承了OutputStream的子类，如字节组数类型ByteArrayOutputStream、文件FileOutputStream</span></span><br><span class="line">            <span class="comment">//用文件接收序列化数据</span></span><br><span class="line">            <span class="type">ObjectOutputStream</span> <span class="variable">foos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(fos);</span><br><span class="line">            foos.writeObject(op);<span class="comment">//序列化对象</span></span><br><span class="line">            foos.close();<span class="comment">//关闭流</span></span><br><span class="line">            System.out.println(<span class="string">&quot;[+] 序列化数据已写入到文件: &quot;</span> + path);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//以字节流形式接收序列化后数据</span></span><br><span class="line">            <span class="type">ObjectOutputStream</span> <span class="variable">boos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(bos);</span><br><span class="line">            boos.writeObject(op);<span class="comment">//序列化对象</span></span><br><span class="line">            boos.close();<span class="comment">//关闭流</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> Arrays.toString(bos.toByteArray());</span><br><span class="line">            System.out.println(<span class="string">&quot;[+] 以字节流形式接收序列化后数据: &quot;</span> + str);</span><br><span class="line">            <span class="comment">//String str2 = bos.toString();</span></span><br><span class="line">            <span class="comment">//System.out.println(&quot;[+] 直接打印序列化数据: &quot; + str2);</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 反序列化具体操作</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> path 存有序列化数据的文件</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">readObjectTest</span><span class="params">(String path)</span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//创建文件流读取序列化数据</span></span><br><span class="line">            <span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(path);</span><br><span class="line">            <span class="comment">//创建 ObjectInputStream 对象</span></span><br><span class="line">            <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(fis);</span><br><span class="line">            <span class="comment">//反序列化</span></span><br><span class="line">            <span class="type">Opration</span> <span class="variable">op_reader</span> <span class="operator">=</span> (Opration) ois.readObject();</span><br><span class="line">            <span class="comment">//打印反序列化后的对象</span></span><br><span class="line">            System.out.print(op_reader);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException | ClassNotFoundException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> <span class="string">&quot;../serTest.ser&quot;</span>;</span><br><span class="line">        <span class="comment">//待序列化的对象</span></span><br><span class="line">        <span class="type">Opration</span> <span class="variable">op</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Opration</span>(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">        <span class="comment">//序列化</span></span><br><span class="line">        writeObjectTest(op, path);</span><br><span class="line">        <span class="comment">//反序列化</span></span><br><span class="line">        <span class="comment">//readObjectTest(path);</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>序列化的具体操作：</p>
+<p>实例化<code>Opration</code>之后，用 ObjectOutputStream 进行序列化，其中 ObjectOutputStream 的形参为接收序列化数据的数据流形式，需要是继承了 OutputStream 的子类，如字节组数类型 ByteArrayOutputStream、文件 FileOutputStream 等；为了加深自己的理解，例子中字节流和文件流接收我都试了一遍。</p>
+<p>输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[+] 序列化数据已写入到文件: serTest.ser</span><br><span class="line">[+] 以字节流形式接收序列化后数据: [-84, -19, 0, 5, 115, 114, 0, 18, 115, 101, 114, 105, 97, 108, 105, 122, 101, 46, 79, 112, 114, 97, 116, 105, 111, 110, -46, -108, -47, -73, 106, -82, 105, -29, 2, 0, 2, 73, 0, 1, 97, 73, 0, 1, 98, 120, 112, 0, 0, 0, 2, 0, 0, 0, 3]</span><br></pre></td></tr></table></figure>
+
+<p>3、本来还有点疑惑 ByteArrayOutputStream 对象自己有个<code> toString</code>方法，为何还要转为字节数据后（<code>bos.toByteArray()</code>）再转为字符串（<code>Arrays.toString</code>），打印了一下它自带的<code> toString</code>后被自己蠢到了；它自带的方法是直接输出 ACSII 字符的，但有些字符是不可打印的，因此以字节输出要方便点；虽然被自己蠢到了，还是记录一下吧。（＞﹏＜）</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1658823694933.png" alt="1658823694933"></p>
+<p>4、简单介绍一下<code>SerialVersionUID</code>。</p>
+<p>SerialVersionUID：8 个字节长，相当于一个类对象的指纹信息，类似于 web 数据包中的签名，直接决定反序列化的成功与否；</p>
+<blockquote>
+<p>之前看到有些文章说 IDE 会自动生成 SerialVersionUID （也可能是我看错了），于是试着手动编译了下未加 SerialVersionUID 的类，然后发现 SerialVersionUID 也会自动生成，遂记录一下</p>
+<p>手动编译：</p>
+<ol>
+<li><code> javac .\Opration.java</code> ；先编译依赖项</li>
+<li><code>javac -cp .. -encoding UTF-8 Sample.java</code> ；在编译执行序列化的类文件，编译时需要注意路径，这里类文件中因为有<code>package</code>，查找文件时是<code>classpath+package+xx.java</code>，所以这里指定 classpath 到上一级目录，避免路径重复出现报错；</li>
+<li><code>cd ..</code> ；也是因为<code>package</code>；</li>
+<li><code>java serialize.Sample</code> ；有<code>package</code>时要写全限定类名，这也是为什么需要上一步的原因。</li>
+</ol>
+</blockquote>
+<p>如果不显性指定 SerialVersionUID，JVM 会在序列化时根据属性自动生成一个 SerialVersionUID，其根据对象的信息以字节形式封装在一起，然后通过 SHA1 算法得到摘要，取前 8 位按 BigEndian 的字节顺序转换成长整型，得到的值即为最终的 SerialVersionUID；</p>
+<p>但在实际开发中，由于代码可能需要重构，所以一般可能都会指定一个固定的 SerialVersionUID 值。</p>
+<p>5、用<a target="_blank" rel="noopener" href="https://github.com/NickstaDB/SerializationDumper">SerializationDumper</a> 查看序列化数据；单词全大写的为常量，其值定义在 ObjectStreamConstants 中；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659513910641.png" alt="1659513910641"></p>
+<p>序列化流的特征一般为<code>aced0005</code>，其base64编码后的特征为<code>rO0AB</code>；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659797213201.png" alt="1659797213201"></p>
+<p>序列化数据的各部分组成这里写了个思维导图：</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/java%E5%BA%8F%E5%88%97%E5%8C%96%E6%B5%81.png" alt="java 序列化流"></p>
+<p>简单介绍下 Handle :句柄，占 4 个字节，序列化流中每个对象都会有个句柄值，当一个对象第一次出现在流中时，会用 newHandle 分配一个句柄值；如果前面出现过该对象，则会用 TC_REFERENCE 标记对象，并用 Handle 指向该对象第一次出现时分配的句柄值；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659540338213.png" alt="1659540338213"></p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659540222766.png" alt="1659540222766"></p>
+<p>classAnnotations 部分的内容是由 ObjectOutputStream 的 annotateClass() 方法写入的。由于 annotateClass() 方法默认什么都不做。所以 classAnnotations 一般都是TC_ENDBLOCKDATA。</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659433438980.png" alt="1659433438980"></p>
+<p>当重写了 writeObject() ，并往流中加了些自定义数据，这些数据在流中体现在哪里呢？</p>
+<p>在 classdata -&gt; 类名 -&gt; objectAnnotation 下面</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659604771747.png" alt="1659604771747"></p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659604782959.png" alt="1659604782959"></p>
+<h3 id="反序列化"><a href="#反序列化" class="headerlink" title="反序列化"></a>反序列化</h3><p>简单演示下正常反序列化的情况：</p>
+<p>取消反序列化方法调用的注释，然后运行，可以看到打印出的反序列化后的对象；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659714103361.png" alt="1659714103361"></p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659714064106.png" alt="1659714064106"></p>
+<p>当待序列化对象重写了<code>readObject</code>方法，并执行了一些危险操作时，则可能导致反序列化漏洞。</p>
+<h3 id="模拟恶意反序列化"><a href="#模拟恶意反序列化" class="headerlink" title="模拟恶意反序列化"></a>模拟恶意反序列化</h3><p>1、<code>Opration</code> 中重写了<code>readObject</code>方法，并且存在可利用的危险操作；</p>
+<p>这里以<code>readObject</code>方法中用 ClassLoader 的 defineClass 方法加载字节码为例，其中字节码由属性 byteCode 装载，而该属性可控；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(ObjectInputStream ois)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">    ois.defaultReadObject();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//用 ClassLoader 的 defineClass 方法加载字节码</span></span><br><span class="line">        <span class="type">Method</span> <span class="variable">defineMethod</span> <span class="operator">=</span> ClassLoader.class.getDeclaredMethod(<span class="string">&quot;defineClass&quot;</span>, String.class, <span class="type">byte</span>[].class, <span class="type">int</span>.class, <span class="type">int</span>.class);</span><br><span class="line">        defineMethod.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="comment">//字节码由类属性 byteCode 提供；需要注意的是第二个参数是类名，不知道的情况填 null 也可以</span></span><br><span class="line">        <span class="type">Class</span> <span class="variable">exp</span> <span class="operator">=</span> (Class) defineMethod.invoke(ClassLoader.getSystemClassLoader(), <span class="literal">null</span>, <span class="built_in">this</span>.byteCode, <span class="number">0</span>, <span class="built_in">this</span>.byteCode.length);</span><br><span class="line">        <span class="comment">//上面加载完后 exp 类不会被初始化，需要手动初始化，触发恶意代码执行</span></span><br><span class="line">        exp.newInstance();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659780889338.png" alt="1659780889338"></p>
+<p>2、编写一个恶意类 TestExp，用 javac 命令编译成<code>.class</code>文件（<code>javac TestExp.java</code>）；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> serialize;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestExp</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">&quot;calc.exe&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">TestExp</span><span class="params">()</span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>3、在原来的序列化操作之前先给属性 byteCode 赋值，然后依次执行序列化、反序列化操作；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659781100813.png" alt="1659781100813"></p>
+<p>4、反序列化时带入的恶意字节码会被执行。</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659781630402.png" alt="1659781630402"></p>
+<h2 id="ObjectOutputStream"><a href="#ObjectOutputStream" class="headerlink" title="ObjectOutputStream"></a>ObjectOutputStream</h2><h3 id="writeObject-Object-obj"><a href="#writeObject-Object-obj" class="headerlink" title="writeObject(Object obj)"></a>writeObject(Object obj)</h3><blockquote>
+<p>权限修饰符<code>public</code></p>
+</blockquote>
+<p>更像一个入口，对于序列化中更细节的实现交给了<code>writeObject0</code>完成。</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659972735718.png" alt="1659972735718"></p>
+<h3 id="writeUnshared-Object-obj"><a href="#writeUnshared-Object-obj" class="headerlink" title="writeUnshared(Object obj)"></a>writeUnshared(Object obj)</h3><blockquote>
+<p>权限修饰符<code>public</code></p>
+</blockquote>
+<p>具体序列化操作同<code>writeObject</code>一样调用<code>writeObject0</code>，与<code>writeObject</code>不同的是其给<code>writeObject0</code>的第二个参数<code>unshared</code>赋值为<code>true</code> ；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659974063844.png" alt="1659974063844"></p>
+<p>前面提到过，对于第二次写入流的对象会用 TC_REFERENCE 标记对象并用 Handle 指向第一次写入时的 Handle 值，这个的前提是使用默认方法（<code>writeObject</code>）进行序列化；</p>
+<p>而<code>writeUnshared</code>的作用（也即<code>unshared</code>的作用）就是对于<strong>位于第一层进行序列化</strong>的对象第二次写入流时不会用 TC_REFERENCE 标记对象，而是会重新申请内存空间，将该对象再写入一遍。所以<code>unshared</code>值的含义可能就是相同对象第二次写入是否共享内存空间。</p>
+<p>而这里为什么重点强调了一下是<strong>位于第一层</strong>呢，因为如果是一个对象A下面出现了两个同类型或同值的对象B、C，那B、C中后写入的那个对象依旧会用 TC_REFERENCE 标记，即该方法对子对象无效。</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659970105259.png" alt="1659970105259"></p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659971199199.png" alt="1659971199199"></p>
+<p>但暂时还不太了解该方法的应用场景。</p>
+<h3 id="writeObjectOverride-Object-obj"><a href="#writeObjectOverride-Object-obj" class="headerlink" title="writeObjectOverride(Object obj)"></a>writeObjectOverride(Object obj)</h3><blockquote>
+<p>权限修饰符<code>protected</code></p>
+</blockquote>
+<p>一个空方法，如果 ObjectOutputStream 的子类需要根据业务需求进行自定义序列化时，便继承该方法并有具体实现，而且覆写 enableOverride 为 true。</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1659974030865.png" alt="1659974030865"></p>
+<h3 id="writeObject0-Object-obj-boolean-unshared"><a href="#writeObject0-Object-obj-boolean-unshared" class="headerlink" title="writeObject0(Object obj,  boolean unshared)"></a>writeObject0(Object obj,  boolean unshared)</h3><blockquote>
+<p>权限修饰符<code>private</code></p>
+</blockquote>
+<p>将对象描述为序列化数据的具体实现，<code>writeObject</code>和<code>writeUnshared</code>最终都是通过调用该方法完成序列化；</p>
+<p>可以根据其主要注释将其作为 4 个部分来看；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660057730486.png" alt="1660057730486"></p>
+<p>既然讲到了<code>writeObject0</code>，那就顺便来看一看标记了<code>final</code>的 <code>writeObject </code>和 <code>readObject</code>重写后是怎么被调用执行的呢？（这里分析下<code>writeObject </code>，<code>readObject</code>就不具体分析了，大致思路与<code>writeObject </code>是一样的）</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660039931357.png" alt="1660039931357"></p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660039980335.png" alt="1660039980335"></p>
+<p>1、首先重写<code>writeObject </code>的位置肯定是在需要序列化的类中，即普通对象中，因此序列化的时候在<code>writeObject0</code>中最终会进入第四部分的普通对象分支下，由<code>writeOrdinaryObject</code>进行普通对象的序列化写入操作；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660057225798.png" alt="1660057225798"></p>
+<p>2、进入<code>writeOrdinaryObject</code>，可以看到其向流中写入了普通对象的标志，以及包含类的基本信息的 desc 对象后，又委托给了 <code>writeSerialData</code> 来继续完成序列化操作；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660059343960.png" alt="1660059343960"></p>
+<p>3、进入<code>writeSerialData</code> （后面这一段文字图片里也有，直接看图也行）：</p>
+<p>里面有个判断是否重写了 writeObject ，如果有重写就进入 if，最后通过反射去调用重写后的 writeObject，没有重写就通过 defaultWriteFields 调用 writeObject0；</p>
+<p>跟进 ObjectStreamClass#hasWriteObjectMethod 去看看它是怎么判断是否重写 writeObject  的，发现其直接判断了一下变量 writeObjectMethod 是否为空；</p>
+<p>在 ObjectStreamClass 中搜索该变量，了解其是如何进行赋值的，在其私有构造方法中找到了，它调用了一个 getPrivateMethod 方法进行赋值（其中传入的参数 cl 应为序列化类的 class 对象）；</p>
+<p>跟进 getPrivateMethod 方法，可以看到其主要满足了四个地方，才会返回重写后的 writeObject 方法 ：</p>
+<ol>
+<li>需要有一个参数类型为 ObjectOutputStream 的 writeObject方法，可以通过反射拿到</li>
+<li>其返回类型为 void</li>
+<li>非静态方法（static）</li>
+<li>权限为私有方法（private）</li>
+</ol>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660115134622.png" alt="1660115134622"></p>
+<p>4、小结</p>
+<p>回到刚才的问题</p>
+<blockquote>
+<p>标记了<code>final</code>的 <code>writeObject </code>和 <code>readObject</code>重写后是怎么被调用执行的呢？</p>
+</blockquote>
+<p>现在答案出来了：如果按照要求重写了 <code>writeObject </code>，最终会通过反射调用到重写后的<code>writeObject </code>，否则就通过 <code>defaultWriteFields</code> 调用默认的 <code>writeObject0</code>。</p>
+<p>反射调用到重写的 <code>writeObject </code>的调用链：</p>
+<p>writeObject -&gt; writeObject0 -&gt;  writeOrdinaryObject -&gt;  writeSerialData -&gt;  ObjectStreamClass#invokeWriteObject </p>
+<p> <code>readObject</code>的调用链与 <code>writeObject </code>差不多，一个是写一个是读：</p>
+<p>readObject -&gt; readObject0 -&gt;  readOrdinaryObject -&gt;  readSerialData-&gt;  ObjectStreamClass#invokeReadObject</p>
+<h3 id="writeReplace"><a href="#writeReplace" class="headerlink" title="writeReplace"></a>writeReplace</h3><p>有点像个隐藏方法，其作用就是替换序列化的对象为其指定的对象后进行序列化；</p>
+<p>分析 <code>writeObject0</code> 的时候提到过第二部分会判断是否重写了<code>writeReplace</code>，如果重写就反射调用重写后的<code>writeReplace</code>将要序列化的对象替换为<code>writeReplace</code>指定的对象；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660116430783.png" alt="1660116430783"></p>
+<p>看到这个是不是感觉与调用重写后 writeObject 有点类似？也的确差不多，跟进 </p>
+<p>hasWriteReplaceMethod 之后可以看到它也是有一个这个变量 writeReplaceMethod；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660116571591.png" alt="1660116571591"></p>
+<p>搜索后发现其赋值也是在 ObjectStreamClass 的私有构造方法内，可以注意到 writeObject 与 readObject 相对，writeReplace 与 readResolve 相对；这里先跟进一下 getInheritableMethod 看看重写 writeReplace 需要什么条件；</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660116787407.png" alt="1660116787407"></p>
+<p>跟进后，可以发现重写 writeReplace 的条件如下：</p>
+<ol>
+<li>无参；</li>
+<li>返回类型为 Object；</li>
+<li>非静态方法或抽象方法；</li>
+<li>权限修饰符无限制，private&#x2F;public&#x2F;protected 都可。</li>
+</ol>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660118882893.png" alt="1660118882893"></p>
+<h2 id="ObjectInputStream"><a href="#ObjectInputStream" class="headerlink" title="ObjectInputStream"></a>ObjectInputStream</h2><p>ObjectInputStream 与 ObjectOutputStream 的实现过程几乎是对称的，一个按照规则去读数据流，一个按照规则去写入流，因此这里对 ObjectInputStream 的相关方法就不多赘述了。</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">readObject &lt;-&gt; writeObject</span><br><span class="line">readUnshared &lt;-&gt; writeUnshared</span><br><span class="line">readObject0 &lt;-&gt; writeObject0</span><br><span class="line">readObjectOverride &lt;-&gt; writeObjectOverride</span><br><span class="line">readResolve &lt;-&gt;  writeReplace (不过需要注意的是 writeReplace 与 readResolve 一般不会一起用，一起用的话 writeReplace 会失效；另还可以通过重写 readResolve 来校验进行反序列化的类)</span><br></pre></td></tr></table></figure>
+
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="java后序列化攻击IDE"><a href="#java后序列化攻击IDE" class="headerlink" title="java后序列化攻击IDE"></a>java后序列化攻击IDE</h3><p><a target="_blank" rel="noopener" href="https://paper.seebug.org/1133/">作者</a>凭借经验猜测 IDE debug 时的变量显示是使用的<code>toString</code>，当待反序列化的数据中重写了<code>toString</code>并且加了些恶意代码后，用IDE在调试模 式下对该数据进行反序列化后，恶意代码得以执行。</p>
+<p>觉得有趣，记录一下（未深入~）</p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1660125613471.png" alt="1660125613471"></p>
+<p><img src="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1658331344752.png" alt="1658331344752"></p>
+<blockquote>
+<h3 id="攻击场景"><a href="#攻击场景" class="headerlink" title="攻击场景"></a>攻击场景</h3><ol>
+<li>当攻击者向支持反序列化的服务发送恶意数据后，虽然当时不会直接触发。不过假如出现特殊情况工程师需要复现这条序列化数据进行调试查看应用哪里出了问题时，恶意对象即可在其Debugger中显示出来，由此触发了RCE。</li>
+<li>攻击者给受害者发送了需要反序列化的文件，受害者如果要通过使用IDEA将其反序列化出来同时还处于debug模式时，就会触发RCE。</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>因为IDEA自身还是提供了是否在此处调用<code>toString</code>的配置。比如我们可以在设置里选择不调用<code>toString</code>，或者提供指定的可以调用<code>toString</code>的类。但要注意的是默认情况下配置是为全部调用的，所以这是一个风险点，也是一个攻击的可能性。</p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对本文的一个小结：</p>
+<ol>
+<li>对序列化反序列化进行示例演示；</li>
+<li>对序列化数据的结构组成进行了简单的学习，并写了一张思维导图；</li>
+<li>简单模拟了一次反序列化漏洞的利用；</li>
+<li>简单介绍了 ObjectOutputStream 中常用的几个方法（ObjectInputStream 文中未多赘述，其实现与 ObjectOutputStream 大致对称）；</li>
+<li>简单分析了下是怎么调用到重写后的 writeObject 方法的（readObject 的调用过程也差不多）；</li>
+</ol>
+<p>待做，下一步学习计划：</p>
+<ul>
+<li>cc 链分析；</li>
+<li>进一步了解其他反序列化触发点：</li>
+</ul>
+<table>
+    <!-- 按行合并：rowspan
+    按列合并：colspan
+  -->
+    <tr>
+        <th>反序列化类型</th>
+        <th>一些反序列化触发点</th>
+        <th>所在组件</th>
+        <th>学习否</th>
+    </tr>
+    <tr>
+        <td rowspan="2">jdk内置</td>
+        <td>ObjectInputStream.readObject</td>
+        <td>jdk内置 - java.io.ObjectInputStream</td>
+        <td>√</td>
+    </tr>
+    <tr>
+        <td>ObjectInputStream.readUnshared</td>
+        <td>jdk内置 - java.io.ObjectInputStream</td>
+        <td>√</td>
+    </tr>
+    <tr>
+        <td rowspan="2">xml</td>
+        <td>XMLDecoder.readObject</td>
+        <td>jdk内置 - java.beans.XMLDecoder </td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>XStream.fromXML </td>
+        <td>com.thoughtworks.xstream</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>yaml</td>
+        <td>Yaml.load </td>
+        <td>org.yaml.snakeyaml.Yaml</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td rowspan="2">json</td>
+        <td>ObjectMapper.readValue</td>
+        <td>jackson - com.fasterxml.jackson.databind.ObjectMapper</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>JSON.parseObject</td>
+        <td>fastJson - com.alibaba.fastjson.JSONObject</td>
+        <td>-</td>
+    </tr>
+</table>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/piaomiaohongchen/p/16447244.html">https://www.cnblogs.com/piaomiaohongchen/p/16447244.html</a><br><a target="_blank" rel="noopener" href="https://su18.org/post/ysoserial-su18-1/">https://su18.org/post/ysoserial-su18-1/</a><br><a target="_blank" rel="noopener" href="https://zone.huoxian.cn/d/1150-java">https://zone.huoxian.cn/d/1150-java</a><br><a target="_blank" rel="noopener" href="http://www.hollischuang.com/archives/1140">http://www.hollischuang.com/archives/1140</a><br><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/4761">https://xz.aliyun.com/t/4761</a><br><a target="_blank" rel="noopener" href="https://paper.seebug.org/1133/">https://paper.seebug.org/1133/</a><br><a target="_blank" rel="noopener" href="https://paper.seebug.org/792/">https://paper.seebug.org/792/</a><br><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/2041">https://xz.aliyun.com/t/2041</a><br><a target="_blank" rel="noopener" href="https://juejin.cn/post/6895434705915609101">https://juejin.cn/post/6895434705915609101</a><br><a target="_blank" rel="noopener" href="https://juejin.cn/post/6854573214077550600">https://juejin.cn/post/6854573214077550600</a><br><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903765921808397">https://juejin.cn/post/6844903765921808397</a><br><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/8686">https://xz.aliyun.com/t/8686</a><br><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/platform/serialization/spec/protocol.html">https://docs.oracle.com/javase/8/docs/platform/serialization/spec/protocol.html</a><br><a target="_blank" rel="noopener" href="https://z.itpub.net/article/detail/0C1A0D0554C079E0D882253855CBB0B9">https://z.itpub.net/article/detail/0C1A0D0554C079E0D882253855CBB0B9</a><br><a target="_blank" rel="noopener" href="https://nowjava.com/docs/java-api-11/java.base/java/io/ObjectOutputStream.html">https://nowjava.com/docs/java-api-11/java.base/java/io/ObjectOutputStream.html</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/binarylei/p/10987933.html">https://www.cnblogs.com/binarylei/p/10987933.html</a></p>
+
+        
+            <div id="toc-article">
+                
+  <div class="widget-wrap" id="toc-wrap">
+    <h3 class="widget-title"><i class="fa fa-toc"></i> 文章目录</h3>
+    <div class="widget">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">应用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%A4%BA%E4%BE%8B"><span class="toc-text">一个简单的示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-text">序列化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-text">反序列化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E6%8B%9F%E6%81%B6%E6%84%8F%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-text">模拟恶意反序列化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ObjectOutputStream"><span class="toc-text">ObjectOutputStream</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#writeObject-Object-obj"><span class="toc-text">writeObject(Object obj)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#writeUnshared-Object-obj"><span class="toc-text">writeUnshared(Object obj)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#writeObjectOverride-Object-obj"><span class="toc-text">writeObjectOverride(Object obj)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#writeObject0-Object-obj-boolean-unshared"><span class="toc-text">writeObject0(Object obj,  boolean unshared)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#writeReplace"><span class="toc-text">writeReplace</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ObjectInputStream"><span class="toc-text">ObjectInputStream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-text">其他</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#java%E5%90%8E%E5%BA%8F%E5%88%97%E5%8C%96%E6%94%BB%E5%87%BBIDE"><span class="toc-text">java后序列化攻击IDE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E5%9C%BA%E6%99%AF"><span class="toc-text">攻击场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+    </div>
+  </div>
+
+
+            </div>
+        
+        
+          <blockquote id="copyright">
+              <p>原文链接: <a href="https://leonardo-o1.github.io/2022/08/22/java反序列化/">https://leonardo-o1.github.io/2022/08/22/java反序列化/</a></p>
+              <p>版权声明: 转载请注明出处.</p>
+          </blockquote>
+        
+      
+    </div>
+    <footer class="article-footer">
+      
+        <div class="article-tag-wrap">
+          
+
+          
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/" rel="tag">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" rel="tag">反序列化</a></li></ul>
+
+          
+    <div class="social-share">
+      <span>分享到:</span>
+    </div>
+
+
+
+        </div>
+      
+      
+        
+<nav id="article-nav">
+  
+    <a href="/2021/05/28/%E8%AE%B0%E4%B8%80%E6%AC%A1%E5%8F%8D%E5%B0%84%E5%9E%8Bxss%E7%BB%95waf/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">older</strong>
+      <div class="article-nav-title">
+        
+          记一次反射型xss绕waf
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+      
+      
+        
+
+
+
+
+
+
+
+
+      
+    </footer>
+  </div>
+</article>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-posts"></i> 最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">java反序列化</a>
+          </li>
+        
+          <li>
+            <a href="/2021/05/28/%E8%AE%B0%E4%B8%80%E6%AC%A1%E5%8F%8D%E5%B0%84%E5%9E%8Bxss%E7%BB%95waf/">记一次反射型xss绕waf</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/%E8%AE%B0%E5%BD%95-python%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5%EF%BC%88SSTI%EF%BC%89bypass/">记录-python模板注入（SSTI）bypass</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/26/ueditor-1-4-3-3-net%E7%89%88-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%A4%8D%E7%8E%B0/">ueditor 1.4.3.3 .net版 任意文件上传漏洞分析与复现</a>
+          </li>
+        
+          <li>
+            <a href="/2019/09/12/De1CTF-wp/">De1CTF部分wp</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ctf/" style="font-size: 10px;">ctf</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/web%E6%BC%8F%E6%B4%9E/" style="font-size: 20px;">web漏洞</a> <a href="/tags/wp/" style="font-size: 10px;">wp</a> <a href="/tags/xss/" style="font-size: 10px;">xss</a> <a href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 10px;">反序列化</a> <a href="/tags/%E8%AE%B0%E5%BD%95/" style="font-size: 20px;">记录</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-classify"></i> 分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ctf/">ctf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E8%AE%B0/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/">漏洞学习</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/%E5%A4%8D%E7%8E%B0/">复现</a><span class="category-list-count">1</span></li></ul></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-archive"></i> 归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022年</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021年</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020年</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019年</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ctf/" rel="tag">ctf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/" rel="tag">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web%E6%BC%8F%E6%B4%9E/" rel="tag">web漏洞</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wp/" rel="tag">wp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xss/" rel="tag">xss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" rel="tag">反序列化</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%B0%E5%BD%95/" rel="tag">记录</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+
+  
+</aside>
+        
+      </div>
+      <a id="totop" href="#top"></a>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      <p>
+        <a href="/sitemap.xml">网站地图</a>
+        <span> | </span><a href="/atom.xml">订阅本站</a>
+        <span> | </span><a href="/about/">联系博主</a>
+      </p>
+      
+        <p>
+          <i class="fa fa-visitors"></i>
+          <i id="busuanzi_container_site_uv"><i id="busuanzi_value_site_uv"></i></i>
+          ，
+          <i class="fa fa-views"></i>
+          <i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>
+        </p>
+      
+      <p>
+        <span>Copyright &copy; 2024 悦昕.</span>
+        <span>Theme by <a href="https://github.com/chaooo/hexo-theme-BlueLake/" target="_blank">BlueLake.</a></span>
+        <span>Powered by <a href="https://hexo.io/" target="_blank">Hexo.</a></span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+    </div>
+  </div>
+  
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+<script src="/js/search.json.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+  
+<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+    
+<script src="/localshare/js/social-share.js"></script>
+
+    
+<script src="/localshare/js/qrcode.js"></script>
+
+  
+  
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+
+
+
+
+</body>
+</html>

